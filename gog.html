@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحة أمواج متحركة - تأثير المؤشر</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; /* لإخفاء شريط التمرير */
+            background: linear-gradient(135deg, #1b1b2f, #0c0c12); /* خلفية داكنة متدرجة */
+        }
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* خلف المحتوى */
+        }
+        #closeBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #ff4d4f;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        #closeBtn:hover {
+            background-color: #d9363e;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="background"></canvas>
+    <button id="closeBtn">إغلاق الموقع</button>
+
+    <script>
+        const canvas = document.getElementById('background');
+        const ctx = canvas.getContext('2d');
+
+        // ضبط حجم الكانفاس
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // إعداد الجسيمات
+        const particles = [];
+        const particleCount = 500; // زيادة عدد الجسيمات
+        const colors = ['#ff9a9e', '#fad0c4', '#fbc2eb', '#a18cd1', '#667eea'];
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 3 + 1,
+                speedX: Math.random() * 2 - 1,
+                speedY: Math.random() * 2 - 1,
+                color: colors[Math.floor(Math.random() * colors.length)],
+            });
+        }
+
+        let mouse = { x: null, y: null };
+
+        // تتبع حركة الماوس
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = event.clientX;
+            mouse.y = event.clientY;
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        // رسم الجسيمات
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((particle) => {
+                // تحديث موقع الجسيم
+                particle.x += particle.speedX;
+                particle.y += particle.speedY;
+
+                // إعادة الجسيم إلى الشاشة عند الخروج
+                if (particle.x > canvas.width) particle.x = 0;
+                if (particle.x < 0) particle.x = canvas.width;
+                if (particle.y > canvas.height) particle.y = 0;
+                if (particle.y < 0) particle.y = canvas.height;
+
+                // رسم الجسيم
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fillStyle = particle.color;
+                ctx.fill();
+                ctx.closePath();
+
+                // تفاعل مع الماوس
+                if (mouse.x && mouse.y) {
+                    const dx = particle.x - mouse.x;
+                    const dy = particle.y - mouse.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) {
+                        const angle = Math.atan2(dy, dx);
+                        particle.speedX -= Math.cos(angle) * 0.2;
+                        particle.speedY -= Math.sin(angle) * 0.2;
+                    }
+                }
+            });
+        }
+
+        function animate() {
+            drawParticles();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // زر الإغلاق
+        document.getElementById('closeBtn').addEventListener('click', function () {
+            window.open('', '_self');
+            window.close();
+        });
+    </script>
+</body>
+</html>
